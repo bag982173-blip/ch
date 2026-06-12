@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>화학안전 도우미 — 노출 시 응급대처 · 사용 시 주의사항</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
+<style>
+:root{
+  --bg:#F7F9FA;
+  --ink:#10181F;
+  --ink-soft:#4A5663;
+  --card:#FFFFFF;
+  --line:#E3E8EC;
+  --safety:#FF6A00;
+  --danger:#E0312E;
+  --danger-bg:#FDEEEE;
+  --caution:#E89B00;
+  --caution-bg:#FFF6E3;
+  --safe:#1F9D55;
+  --safe-bg:#EAF7F0;
+  --stripe:repeating-linear-gradient(135deg,#FFC400 0 14px,#10181F 14px 28px);
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.stripe-bar{height:8px;background:var(--stripe)}
+.wrap{max-width:780px;margin:0 auto;padding:0 20px 80px}
+
+/* ── Hero ─────────────────────────── */
+header{padding:48px 0 8px}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--ink-soft);
+  text-transform:uppercase;margin-bottom:14px;
+}
+.eyebrow::before{content:"";width:26px;height:10px;background:var(--stripe);border-radius:2px}
+h1{font-size:clamp(28px,6vw,42px);font-weight:800;letter-spacing:-.02em;line-height:1.25}
+h1 em{font-style:normal;color:var(--safety)}
+.sub{margin-top:12px;color:var(--ink-soft);font-size:15px;max-width:580px}
+
+/* ── Search ───────────────────────── */
+.search{
+  margin-top:28px;display:flex;gap:10px;
+  background:var(--card);border:2px solid var(--ink);border-radius:var(--radius);
+  padding:8px;box-shadow:6px 6px 0 rgba(16,24,31,.08);
+}
+.search input{
+  flex:1;border:none;outline:none;font:inherit;font-size:17px;
+  padding:10px 12px;background:transparent;color:var(--ink);min-width:0;
+}
+.search input::placeholder{color:#9AA6B1}
+.search button{
+  font:inherit;font-weight:700;font-size:15px;border:none;cursor:pointer;
+  background:var(--safety);color:#fff;border-radius:10px;padding:12px 22px;
+  transition:transform .12s ease,background .12s ease;white-space:nowrap;
+}
+.search button:hover{background:#E55F00}
+.search button:active{transform:scale(.97)}
+.search button:disabled{background:#C8CFD6;cursor:not-allowed}
+.chips{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chips span{font-size:13px;color:var(--ink-soft);margin-right:2px}
+.chip{
+  font:inherit;font-size:13px;font-weight:600;cursor:pointer;
+  border:1.5px solid var(--line);background:var(--card);color:var(--ink);
+  border-radius:999px;padding:7px 14px;transition:border-color .12s,color .12s;
+}
+.chip:hover{border-color:var(--safety);color:var(--safety)}
+:where(button,input,a):focus-visible{outline:3px solid var(--safety);outline-offset:2px;border-radius:6px}
+
+/* 항상 보이는 긴급 연락 바 */
+.em-always{
+  margin-top:22px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  font-size:13px;color:var(--ink-soft);
+}
+.em-always a{
+  text-decoration:none;font-weight:800;font-size:13px;color:var(--danger);
+  border:1.5px solid var(--danger);background:var(--danger-bg);
+  border-radius:999px;padding:6px 14px;
+}
+
+/* ── States ───────────────────────── */
+#loading,#errorBox{display:none;margin-top:36px}
+.load-card{
+  background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);
+  padding:36px 28px;text-align:center;
+}
+.beaker{font-size:40px;display:inline-block;animation:bob 1.2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.load-msg{margin-top:14px;font-weight:700;font-size:16px}
+.load-sub{margin-top:6px;color:var(--ink-soft);font-size:13px}
+.err-card{
+  background:var(--danger-bg);border:1.5px solid var(--danger);border-radius:var(--radius);
+  padding:22px 24px;
+}
+.err-card strong{color:var(--danger)}
+.err-card p{margin-top:6px;font-size:14px;color:var(--ink-soft)}
+.err-card .err-detail{
+  margin-top:10px;font-size:12px;color:#A05050;background:#fff;
+  border-radius:8px;padding:8px 12px;word-break:break-all;
+}
+
+/* ── Results ──────────────────────── */
+#result{display:none;margin-top:36px}
+.risk-card{
+  border-radius:var(--radius);overflow:hidden;border:2px solid var(--ink);
+  box-shadow:6px 6px 0 rgba(16,24,31,.08);background:var(--card);
+}
+.risk-top{height:10px}
+.risk-top.danger{background:repeating-linear-gradient(135deg,#E0312E 0 14px,#10181F 14px 28px)}
+.risk-top.caution{background:var(--stripe)}
+.risk-top.safe{background:repeating-linear-gradient(135deg,#1F9D55 0 14px,#10181F 14px 28px)}
+.risk-body{padding:24px 26px 22px}
+.risk-head{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.chem-name{font-size:clamp(24px,5vw,32px);font-weight:800;letter-spacing:-.02em}
+.chem-meta{margin-top:4px;color:var(--ink-soft);font-size:14px}
+.chem-meta code{
+  font-family:inherit;font-weight:700;color:var(--ink);
+  background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:2px 8px;margin-left:6px;
+}
+.badge{
+  font-size:15px;font-weight:800;border-radius:10px;padding:10px 18px;
+  display:inline-flex;align-items:center;gap:8px;border:2px solid;
+}
+.badge.danger{color:var(--danger);background:var(--danger-bg);border-color:var(--danger)}
+.badge.caution{color:#9A6700;background:var(--caution-bg);border-color:var(--caution)}
+.badge.safe{color:var(--safe);background:var(--safe-bg);border-color:var(--safe)}
+.risk-summary{margin-top:14px;font-size:15px}
+
+section.card{
+  background:var(--card);border:1.5px solid var(--line);border-radius:var(--radius);
+  padding:24px;margin-top:18px;
+}
+section.card.hot{border:2px solid var(--danger)}
+.card-title{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;margin-bottom:6px}
+.card-title .ico{font-size:20px}
+.card-desc{font-size:13px;color:var(--ink-soft);margin-bottom:16px}
+
+/* 응급처치 */
+.aid-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.aid{border:1.5px solid var(--line);border-radius:12px;padding:14px;background:var(--bg)}
+.aid h4{font-size:14px;font-weight:800;display:flex;align-items:center;gap:6px}
+.aid p{font-size:13.5px;margin-top:6px}
+.tag119{
+  display:inline-block;margin-top:8px;font-size:11.5px;font-weight:800;
+  color:#fff;background:var(--danger);border-radius:6px;padding:3px 8px;
+}
+.tag-ok{
+  display:inline-block;margin-top:8px;font-size:11.5px;font-weight:800;
+  color:var(--safe);background:var(--safe-bg);border-radius:6px;padding:3px 8px;
+}
+
+/* 주의사항 체크리스트 */
+.check-list li{
+  list-style:none;font-size:14.5px;padding:10px 0 10px 32px;position:relative;
+  border-bottom:1px dashed var(--line);
+}
+.check-list li:last-child{border-bottom:none}
+.check-list li::before{
+  content:"✔";position:absolute;left:0;top:10px;
+  width:22px;height:22px;border-radius:7px;background:var(--safety);color:#fff;
+  font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;
+}
+
+/* 혼합 위험 */
+.mix-item{
+  border-left:4px solid var(--danger);background:var(--danger-bg);
+  border-radius:0 10px 10px 0;padding:12px 14px;margin-top:10px;
+}
+.mix-item strong{font-size:14.5px}
+.mix-item p{font-size:13.5px;color:var(--ink-soft);margin-top:3px}
+
+/* 단계 리스트 */
+.steps{counter-reset:s;list-style:none}
+.steps li{
+  counter-increment:s;position:relative;padding:10px 0 10px 44px;font-size:14.5px;
+  border-bottom:1px dashed var(--line);
+}
+.steps li:last-child{border-bottom:none}
+.steps li::before{
+  content:counter(s);position:absolute;left:0;top:8px;
+  width:28px;height:28px;border-radius:8px;background:var(--ink);color:#FFC400;
+  font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;
+}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+.two-col section.card{margin-top:0}
+
+/* 긴급 연락 */
+.emergency{
+  margin-top:18px;border-radius:var(--radius);border:2px solid var(--danger);
+  background:var(--danger-bg);padding:20px 24px;
+  display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;
+}
+.emergency h3{font-size:15px;color:var(--danger);display:flex;gap:8px;align-items:center}
+.em-nums{display:flex;gap:10px;flex-wrap:wrap}
+.em-nums a{
+  text-decoration:none;font-weight:800;font-size:15px;color:#fff;background:var(--danger);
+  border-radius:10px;padding:10px 16px;transition:transform .12s;
+}
+.em-nums a:hover{transform:translateY(-2px)}
+.em-nums a small{display:block;font-size:10.5px;font-weight:600;opacity:.85}
+
+.disclaimer{margin-top:20px;font-size:12px;color:#8A96A1;text-align:center}
+footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--line);
+  font-size:12.5px;color:#8A96A1;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+@media(max-width:620px){
+  .aid-grid,.two-col{grid-template-columns:1fr}
+  .search{flex-direction:column}
+  .search button{padding:13px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="stripe-bar" aria-hidden="true"></div>
+<div class="wrap">
+
+  <header>
+    <span class="eyebrow">SDG 3.9 · 유해화학물질 피해 줄이기</span>
+    <h1>화학물질에 노출됐나요?<br><em>지금 해야 할 행동</em>을 알려드려요</h1>
+    <p class="sub">물질 이름을 입력하면 몸에 닿거나 들이마셨을 때의 응급 대처법과, 사용할 때 꼭 지켜야 할 주의사항을 누구나 이해할 수 있는 말로 알려드립니다. 한글·영문 모두 가능해요.</p>
+  </header>
+
+  <div class="search">
+    <input id="chemInput" type="text" placeholder="예: 염산, 아세톤, ammonia…"
+           aria-label="화학물질 이름 입력" autocomplete="off">
+    <button id="searchBtn" type="button" onclick="analyze()">대처법 확인</button>
+  </div>
+  <div class="chips">
+    <span>바로 검색:</span>
+    <button class="chip" type="button" onclick="quick('염산')">염산</button>
+    <button class="chip" type="button" onclick="quick('아세톤')">아세톤</button>
+    <button class="chip" type="button" onclick="quick('암모니아')">암모니아</button>
+    <button class="chip" type="button" onclick="quick('락스')">락스</button>
+    <button class="chip" type="button" onclick="quick('과산화수소')">과산화수소</button>
+  </div>
+
+  <div class="em-always">
+    <span>응급 상황이라면 검색보다 신고가 먼저예요 →</span>
+    <a href="tel:119">📞 119</a>
+    <a href="tel:0808708000">📞 화학물질 긴급대응 080-870-8000</a>
+  </div>
+
+  <div id="loading">
+    <div class="load-card">
+      <span class="beaker" aria-hidden="true">🧪</span>
+      <p class="load-msg" id="loadMsg">안전 정보를 분석하고 있어요…</p>
+      <p class="load-sub">AI가 대처법을 정리하는 중입니다 (약 10~20초)</p>
+    </div>
+  </div>
+
+  <div id="errorBox">
+    <div class="err-card">
+      <strong id="errTitle">분석에 실패했어요</strong>
+      <p id="errMsg"></p>
+      <div class="err-detail" id="errDetail" style="display:none"></div>
+    </div>
+  </div>
+
+  <div id="result" aria-live="polite"></div>
+
+  <footer>
+    <span>화학안전 도우미 · Chemical Safety Assistant</span>
+    <span>Powered by Claude AI</span>
+  </footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const RISK = {
+  danger:  {label:"매우 위험",   icon:"🚨", cls:"danger"},
+  caution: {label:"주의 필요",   icon:"⚠️", cls:"caution"},
+  safe:    {label:"비교적 안전", icon:"✅", cls:"safe"}
+};
+const AID_META = [
+  ["inhale","😮‍💨 들이마셨을 때(흡입)"],
+  ["skin","🖐️ 피부에 닿았을 때"],
+  ["eye","👁️ 눈에 들어갔을 때"],
+  ["ingest","👄 삼켰을 때(섭취)"]
+];
+const LOAD_MSGS = [
+  "안전 정보를 분석하고 있어요…",
+  "노출 상황별 응급 대처법을 정리하는 중…",
+  "사용할 때 주의할 점을 확인하는 중…",
+  "함께 두면 위험한 물질을 찾는 중…"
+];
+let loadTimer = null;
+
+function quick(name){
+  $("chemInput").value = name;
+  analyze();
+}
+$("chemInput").addEventListener("keydown", e => { if(e.key === "Enter") analyze(); });
+
+function esc(s){
+  return String(s ?? "").replace(/[&<>"']/g, c =>
+    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function setState(state){
+  $("loading").style.display = state === "loading" ? "block" : "none";
+  $("errorBox").style.display = state === "error" ? "block" : "none";
+  $("result").style.display = state === "result" ? "block" : "none";
+  $("searchBtn").disabled = state === "loading";
+  $("searchBtn").textContent = state === "loading" ? "분석 중…" : "대처법 확인";
+}
+
+function startLoadingMsgs(){
+  let i = 0;
+  $("loadMsg").textContent = LOAD_MSGS[0];
+  loadTimer = setInterval(() => {
+    i = (i + 1) % LOAD_MSGS.length;
+    $("loadMsg").textContent = LOAD_MSGS[i];
+  }, 4000);
+}
+function stopLoadingMsgs(){ if(loadTimer){ clearInterval(loadTimer); loadTimer = null; } }
+
+async function fetchInfo(name){
+  const res = await fetch("/api/analyze", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ name })
+  });
+  let data = null;
+  try { data = await res.json(); } catch(e){}
+  if(!res.ok){
+    const detail = data?.error || "";
+    throw new Error("서버 오류 (HTTP " + res.status + ") " + detail);
+  }
+  if(!data) throw new Error("서버가 빈 응답을 보냈습니다");
+  return data;
+}
+
+async function analyze(){
+  const name = $("chemInput").value.trim();
+  if(!name){
+    showError("입력이 비어 있어요", "화학물질 이름을 먼저 입력해 주세요. 예: 염산, 아세톤", "");
+    return;
+  }
+  setState("loading");
+  startLoadingMsgs();
+  let lastErr = null;
+  let info = null;
+
+  // 최대 2회 시도 (네트워크/형식 오류 자동 재시도)
+  for(let attempt = 0; attempt < 2 && !info; attempt++){
+    try{
+      info = await fetchInfo(name);
+    }catch(e){
+      lastErr = e;
+    }
+  }
+  stopLoadingMsgs();
+
+  if(!info){
+    showError(
+      "분석에 실패했어요",
+      "잠시 후 다시 시도해 주세요. 문제가 계속되면 아래 상세 내용을 확인해 주세요.",
+      lastErr ? String(lastErr.message || lastErr) : ""
+    );
+    return;
+  }
+  if(info.found === false){
+    showError("화학물질을 찾지 못했어요", info.message || "이름을 다시 확인해 주세요. 예: 염산, acetone", "");
+    return;
+  }
+  render(info);
+  setState("result");
+  $("result").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function showError(title, msg, detail){
+  $("errTitle").textContent = title;
+  $("errMsg").textContent = msg;
+  const d = $("errDetail");
+  if(detail){ d.textContent = "상세: " + detail; d.style.display = "block"; }
+  else d.style.display = "none";
+  setState("error");
+}
+
+function render(d){
+  const risk = RISK[d.risk_level] || RISK.caution;
+  const aid = d.first_aid || {};
+  const precautions = (d.precautions || []).slice(0,5);
+  const mixing = (d.mixing || []).slice(0,3);
+  const storage = (d.storage || []).slice(0,3);
+  const disposal = (d.disposal || []).slice(0,3);
+
+  let html = `
+  <div class="risk-card">
+    <div class="risk-top ${risk.cls}"></div>
+    <div class="risk-body">
+      <div class="risk-head">
+        <div>
+          <div class="chem-name">${esc(d.name_ko || "")}</div>
+          <div class="chem-meta">${esc(d.name_en || "")}${d.formula ? `<code>${esc(d.formula)}</code>` : ""}</div>
+        </div>
+        <span class="badge ${risk.cls}">${risk.icon} ${risk.label}</span>
+      </div>
+      ${d.summary ? `<p class="risk-summary">${esc(d.summary)}</p>` : ""}
+    </div>
+  </div>
+
+  <section class="card hot">
+    <h2 class="card-title"><span class="ico">⛑️</span>노출됐을 때 — 지금 바로 이렇게 하세요</h2>
+    <p class="card-desc">상황에 맞는 칸을 찾아 따라 하세요. 증상이 심하거나 계속되면 즉시 119에 신고하세요.</p>
+    <div class="aid-grid">`;
+
+  AID_META.forEach(([key, label]) => {
+    const a = aid[key];
+    if(!a) return;
+    html += `
+      <div class="aid">
+        <h4>${label}</h4>
+        <p>${esc(a.steps)}</p>
+        ${a.call119
+          ? `<span class="tag119">🚨 119 신고 필요</span>`
+          : `<span class="tag-ok">상태를 지켜보세요 (악화 시 119)</span>`}
+      </div>`;
+  });
+
+  html += `</div>
+    <div class="emergency" style="margin-top:18px">
+      <h3>🚨 망설여진다면 일단 전화하세요</h3>
+      <div class="em-nums">
+        <a href="tel:119">119<small>소방·구급</small></a>
+        <a href="tel:0808708000">080-870-8000<small>화학물질 긴급대응센터</small></a>
+      </div>
+    </div>
+  </section>`;
+
+  if(precautions.length){
+    html += `
+  <section class="card">
+    <h2 class="card-title"><span class="ico">🧤</span>사용할 때 꼭 지키세요</h2>
+    <p class="card-desc">사고를 미리 막는 게 가장 좋은 응급처치예요.</p>
+    <ul class="check-list">${precautions.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>
+  </section>`;
+  }
+
+  if(mixing.length){
+    html += `
+  <section class="card">
+    <h2 class="card-title"><span class="ico">🚫</span>절대 섞으면 안 돼요</h2>
+    <p class="card-desc">아래 물질과 함께 쓰거나 가까이 두면 위험해요.</p>
+    ${mixing.map(m=>`
+      <div class="mix-item">
+        <strong>${esc(m.with)}</strong>
+        <p>${esc(m.why)}</p>
+      </div>`).join("")}
+  </section>`;
+  }
+
+  if(storage.length || disposal.length){
+    html += `<div class="two-col">`;
+    if(storage.length){
+      html += `
+      <section class="card">
+        <h2 class="card-title"><span class="ico">📦</span>보관 방법</h2>
+        <ol class="steps">${storage.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>
+      </section>`;
+    }
+    if(disposal.length){
+      html += `
+      <section class="card">
+        <h2 class="card-title"><span class="ico">♻️</span>버리는 방법</h2>
+        <ol class="steps">${disposal.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>
+      </section>`;
+    }
+    html += `</div>`;
+  }
+
+  html += `
+  <p class="disclaimer">이 정보는 AI가 생성한 참고용 안전 안내입니다. 실제 사고 시에는 반드시 119 또는 전문기관의 지시를 따르세요.</p>`;
+
+  $("result").innerHTML = html;
+}
+</script>
+</body>
+</html>
